@@ -1,24 +1,18 @@
 import React, { ReactElement,useState } from "react"
+import ExpenseType from "../Types/ExpenseItem"
 
-interface expenseItem {
-  id:number,
-  title:string,
-  amount:number,
-  date:string
-
-}
 interface childrenType{
   children:ReactElement
 }
 interface ExpenseContextType{
-  expenses:expenseItem[],
-  setExpenses:React.Dispatch<React.SetStateAction<expenseItem[] | []>>
+  expenses:ExpenseType[],
+  setExpenses:React.Dispatch<React.SetStateAction<ExpenseType[] | []>>
 }
 
 const ExpenseContext = React.createContext<undefined|ExpenseContextType>(undefined)
 
 const AppContext = ({children}:childrenType) => {
-  const [expenses, setExpenses] = useState<[]|expenseItem[]>([]);
+  const [expenses, setExpenses] = useState<[]|ExpenseType[]>([]);
   return (
     <ExpenseContext.Provider value={{expenses, setExpenses}}>
       {children}

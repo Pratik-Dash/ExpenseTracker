@@ -20,20 +20,15 @@ import Switch from '@mui/material/Switch';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
-
-interface Data {
-    id:number,
-    title:string,
-    amount:number,
-    date:string
-}
+import ExpenseType from '../Types/ExpenseItem';
+import { ExpenseContext } from '../Context/AppContext';
 
 function createData(
     id:number,
     title:string,
     amount:number,
     date:string
-): Data {
+): ExpenseType {
   return {
     id,
     title,
@@ -42,10 +37,10 @@ function createData(
   };
 }
 
-const rows = [
+// const rows = [
   
-  createData(13, 'Purchased an ROG ally X', 37000,"11/02/2024"),
-];
+//   createData(13, 'Purchased an ROG ally X', 37000,"11/02/2024"),
+// ];
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -73,7 +68,7 @@ function getComparator<Key extends keyof any>(
 
 interface HeadCell {
   disablePadding: boolean;
-  id: keyof Data;
+  id: keyof ExpenseType;
   label: string;
   numeric: boolean;
 }
@@ -102,7 +97,7 @@ const headCells: readonly HeadCell[] = [
 
 interface EnhancedTableProps {
   numSelected: number;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof Data) => void;
+  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof ExpenseType) => void;
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
   order: Order;
   orderBy: string;
@@ -113,7 +108,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
     props;
   const createSortHandler =
-    (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
+    (property: keyof ExpenseType) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
     };
 
@@ -190,7 +185,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           id="tableTitle"
           component="div"
         >
-          Nutrition
+          Expenses
         </Typography>
       )}
       {numSelected > 0 ? (
@@ -207,15 +202,24 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 }
 export const ExpenseList = () => {
   const [order, setOrder] = React.useState<Order>('asc');
-  const [orderBy, setOrderBy] = React.useState<keyof Data>('calories');
+  const [orderBy, setOrderBy] = React.useState<keyof ExpenseType>('amount');
   const [selected, setSelected] = React.useState<readonly number[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-
+  
+  const context = React.useContext(ExpenseContext);
+  if(!context){
+    throw new Error("Context Empty");
+  }
+  const {expenses} = context
+  const [expenseRows,setExpenseRows] = React.useState<ExpenseType[]>([...expenses])
+  React.useEffect(() => {
+    setExpenseRows([...expenses])
+  },[expenses])
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
-    property: keyof Data,
+    property: keyof ExpenseType,
   ) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -224,7 +228,7 @@ export const ExpenseList = () => {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = rows.map((n) => n.id);
+      const newSelected = expenses.map((n) => n.id);
       setSelected(newSelected);
       return;
     }
@@ -265,11 +269,11 @@ export const ExpenseList = () => {
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - expenses.length) : 0;
 
   const visibleRows = React.useMemo(
     () =>
-      [...rows]
+      [...expenseRows]
         .sort(getComparator(order, orderBy))
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
     [order, orderBy, page, rowsPerPage],
@@ -291,7 +295,7 @@ export const ExpenseList = () => {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              rowCount={expenses.length}
             />
             <TableBody>
               {visibleRows.map((row, index) => {
@@ -348,7 +352,7 @@ export const ExpenseList = () => {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={rows.length}
+          count={expenses.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

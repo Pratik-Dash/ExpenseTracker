@@ -1,15 +1,9 @@
 import React, { useContext, useState } from 'react'
 import { ExpenseContext } from '../Context/AppContext';
-interface expenseInterface{
-  id:number,
-  title:string,
-  amount:number,
-  date:string,
-}
+import ExpenseType from '../Types/ExpenseItem';
 const ExpenseCollector = () => {
-    const[title, setTitle] = useState<string>("");
-    const [expense, setExpense] = useState<expenseInterface>({id:'',title:"",amount:0,date:""})
-    const [amount,setAmount] = useState<number>(0);
+    
+    const [expense, setExpense] = useState<ExpenseType>({id:0,title:"",amount:0,date:""})
     const context = useContext(ExpenseContext);
     if(!context){
       throw new Error("context undefined");
@@ -34,10 +28,10 @@ const ExpenseCollector = () => {
       
     }
     const clearFields = () => {
-      setExpense({id:'',title:"",amount:0,date:""})
+      setExpense({id:0,title:"",amount:0,date:""})
     }
     const handleAddExpense = () => {
-
+      setExpense((prev) => ({...prev, id:Date.now()}));
       setExpenses([...expenses,expense]);
       clearFields();
 
