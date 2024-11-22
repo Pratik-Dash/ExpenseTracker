@@ -213,10 +213,6 @@ export const ExpenseList = () => {
     throw new Error("Context Empty");
   }
   const {expenses} = context
-  const [expenseRows,setExpenseRows] = React.useState<ExpenseType[]>([...expenses])
-  React.useEffect(() => {
-    setExpenseRows([...expenses])
-  },[expenses])
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
     property: keyof ExpenseType,
@@ -273,10 +269,10 @@ export const ExpenseList = () => {
 
   const visibleRows = React.useMemo(
     () =>
-      [...expenseRows]
+      [...expenses]
         .sort(getComparator(order, orderBy))
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage],
+    [order, orderBy, page, rowsPerPage,expenses],
   );
 
   return (
