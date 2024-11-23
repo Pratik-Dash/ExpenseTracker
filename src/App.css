@@ -6,7 +6,6 @@
 }
 .hero{
   display: flex;
-  border: 1px solid black;
   padding: 1rem;
   justify-content: center;
   font-size: larger;
@@ -15,13 +14,22 @@
 
 .container{
   display: flex;
-  justify-content: center;
+  justify-content: space-evenly;
+  margin: 0 auto;
+  height: 100vh;
+
 
 }
 
 .leftPane{
   display: flex;
   flex-direction: column;
+  /* border: 1px solid black; */
+  box-sizing: border-box;
+}
+
+.rightPane{
+  /* border: 1px solid black; */
 }
 
 .expense-form{
@@ -51,4 +59,9 @@
   font-size: large;
   font-weight: 600;
   cursor:pointer
+}
+
+.modal-container{
+  display: flex;
+  justify-content: center;
 }

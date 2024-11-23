@@ -4,6 +4,7 @@ import './App.css';
 import ExpenseCollector from './Components/ExpenseCollector';
 import { AppContext } from './Context/AppContext';
 import {ExpenseList} from './Components/ExpenseList';
+import Charts from './Components/Charts';
 
 
 
@@ -18,13 +19,16 @@ function App() {
     <div className="leftpane">
     
       <ExpenseCollector/>
+      <div className="expense-list">
       <ExpenseList/>
+      </div>
+      
       
     </div>
     
 
     <div className="rightPane">
-      
+      <Charts/>
     </div>
     </div>
     

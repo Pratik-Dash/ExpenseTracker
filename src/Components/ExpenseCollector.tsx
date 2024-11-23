@@ -7,6 +7,8 @@ import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
 import { Padding } from '@mui/icons-material';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { FormControl, InputLabel, MenuItem } from '@mui/material';
 
 const style = {
   position: 'absolute',
@@ -22,30 +24,33 @@ const style = {
 
 const ExpenseCollector = () => {
     
-    const [expense, setExpense] = useState<ExpenseType>({id:0,title:"",amount:0,date:""})
+    const [expense, setExpense] = useState<ExpenseType>({id:0,title:"", category:'Select category',amount:0,date:""})
     const context = useContext(ExpenseContext);
     const [open, setOpen] = React.useState(false);
     const [focused,setFocused] = useState<boolean>(false)
+    const [error,setError] = useState<boolean>(false);
     const onFocus = () => setFocused(true);
     const onBlur = () => setFocused(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
     if(!context){
       throw new Error("context undefined");
     }
     const {expenses,setExpenses} = context;
-    const handleAmountEntry = (e:React.ChangeEvent<HTMLInputElement>) => {
-
+    const handleAmountEntry = (e:React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      
       const value = e.target.value;
       if(/^\d+$/.test(value)){
         setExpense({...expense, id:Date.now(), amount:Number(e.target.value)});
+        console.log(expense.amount)
       }
       else{
         setExpense({...expense, amount:0});
+        console.log(expense.amount)
       }
 
     }
-    const handleExpenseDateEntry = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleExpenseDateEntry = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 
       console.log(e.target.value)
       const value = e.target.value;
@@ -53,31 +58,34 @@ const ExpenseCollector = () => {
       
     }
     const clearFields = () => {
-      setExpense({id:0,title:"",amount:0,date:""})
+      setExpense({id:0,title:"", category:'',amount:0,date:""})
+      
     }
     const handleAddExpense = () => {
       
-      const updatedExpense:ExpenseType = {...expense,id:Date.now()}
-      setExpenses((prev) => [...prev,updatedExpense]);
-      clearFields();
+      if(expense.title != "" && expense.date != "" ){
+        const updatedExpense:ExpenseType = {...expense,id:Date.now()}
+        setExpenses((prev) => [...prev,updatedExpense]);
+        clearFields();
+        handleClose();
+        setError(false)
+      }
+      else{
+        setError(true)
+      }
+      
 
     }
-    console.log(expenses)
+    
+    const handleCategorySelect = (e:SelectChangeEvent<string>) => {
+      setExpense({...expense,category:e.target.value})
+    }
   
   return (
     <div>
       <div className="expense-form">
-        <span className='expenseHeader'>Add Expense</span>
-        <input type="text" className="expenseTitle" value = {expense.title} onChange={(e) => setExpense({...expense,title: e.target.value})} placeholder='Expense' />
-        <input type="text" className="expenseAmount" value={expense.amount} onChange={(e) => handleAmountEntry(e)} placeholder='Amount'/>
-        <input type="date" className="expenseDate" placeholder='date' value={expense.date} onChange={(e)=>handleExpenseDateEntry(e)} />
-        <div className="button-container">
-          <button className="add-btn" onClick={handleAddExpense}>Add Expense</button>
-          <button className="add-btn" onClick={clearFields}>Clear</button>
-          </div>
-      </div>
-      <div>
-      <Button onClick={handleOpen}>Open modal</Button>
+      <div className='modal-container'>
+      <Button onClick={handleOpen} variant='outlined' sx={{color:'black', borderColor:'black'}}>Add Expense</Button>
       <Modal
         open={open}
         onClose={handleClose}
@@ -88,26 +96,32 @@ const ExpenseCollector = () => {
           <Typography id="modal-modal-title" variant="h4" component="h4" sx={{textAlign:'center', fontWeight:500}}>
             Add Expense
           </Typography>
-          <Typography sx={{ mt: 2, padding:1, display:'flex', flexDirection:'column', boxSizing:'border-box'
+          <Typography sx={{ mt: 2, padding:1, display:'flex', flexDirection:'column', boxSizing:'border-box', gap:'.5rem'
            }}>
-          <TextField id="outlined-hidden-label-small" label="Expense" variant="outlined" required sx={{padding:0.5, boxSizing:'border-box'}} 
-          
-          />
-          <TextField id="outlined-hidden-label-small" label="Amount" variant="outlined" type='number' sx={{padding:0.5, boxSizing:'border-box'}} />
-          <TextField id="outlined-hidden-label-small" label="Date" variant="outlined" type={focused?'date':'text'} required sx={{padding:0.5, boxSizing:'border-box'}} onFocus={onFocus} onBlur={onBlur}/>
+          <TextField id="outlined-hidden-label-small" label="Expense" variant="outlined" required sx={{padding:0.5, boxSizing:'border-box'}} onChange={(e) => {(setExpense({...expense,title: e.target.value}))}} value={expense.title} error = {error}/>
+
+          <TextField id="outlined-hidden-label-small" label="Amount" value = {expense.amount} variant="outlined" type='text' sx={{padding:0.5, boxSizing:'border-box'}} onChange={(e) => handleAmountEntry(e)} />
+            <FormControl>
+          <InputLabel id="demo-simple-select-label">Category</InputLabel>
+           
+          <Select labelId="demo-simple-select-label" id="demo-simple-select" value={expense.category}label="Category"onChange={(e) => handleCategorySelect(e)}>
+          <MenuItem value={"Food"}>Food</MenuItem>
+          <MenuItem value={"Lifestyle"}>Lifestyle</MenuItem>
+          <MenuItem value={"Entertainment"}>Entertainment</MenuItem>
+          </Select>
+          </FormControl>
+
+          <TextField id="outlined-hidden-label-small" label="Date" variant="outlined" type={focused?'date':'text'} required sx={{padding:0.5, boxSizing:'border-box'}} onFocus={onFocus} onBlur={onBlur} value={expense.date} onChange={(e)=>handleExpenseDateEntry(e)} error = {error}/>
 
           <section style={{display:'flex', justifyContent:'center', boxSizing:'border-box', marginTop:'1rem', gap:'.5rem'}}>
-          <Button variant="contained" disableElevation>Add Expense</Button>
-          <Button variant="outlined">Cancel</Button></section>
-
-
+          <Button variant="contained" disableElevation onClick={handleAddExpense} sx={{color:'#fff', borderColor:'black', backgroundColor:'black'}}>Add Expense</Button>
+          <Button variant="outlined" onClick={clearFields} sx={{color:'black', borderColor:'black'}}>Clear</Button></section>
           </Typography>
-          
-          
-          
         </Box>
       </Modal>
     </div>
+      </div>
+      
     </div>
   )
 }

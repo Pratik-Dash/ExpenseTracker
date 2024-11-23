@@ -15,27 +15,11 @@ import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
 import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
 import ExpenseType from '../Types/ExpenseItem';
 import { ExpenseContext } from '../Context/AppContext';
 
-function createData(
-    id:number,
-    title:string,
-    amount:number,
-    date:string
-): ExpenseType {
-  return {
-    id,
-    title,
-    amount,
-    date
-  };
-}
 
 // const rows = [
   
@@ -81,6 +65,12 @@ const headCells: readonly HeadCell[] = [
     label: 'Expense Title',
   },
   {
+    id: 'category',
+    numeric: false,
+    disablePadding: true,
+    label: 'Category',
+  },
+  {
     id: 'amount',
     numeric: true,
     disablePadding: false,
@@ -114,41 +104,42 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
   return (
     <TableHead>
-      <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{
-              'aria-label': 'select all desserts',
-            }}
-          />
-        </TableCell>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.numeric ? 'right' : 'left'}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            sortDirection={orderBy === headCell.id ? order : false}
+    <TableRow>
+      <TableCell padding="checkbox">
+        <Checkbox
+          color="primary"
+          indeterminate={numSelected > 0 && numSelected < rowCount}
+          checked={rowCount > 0 && numSelected === rowCount}
+          onChange={onSelectAllClick}
+          inputProps={{
+            'aria-label': 'select all items',
+          }}
+        />
+      </TableCell>
+      {headCells.map((headCell) => (
+        <TableCell
+          key={headCell.id}
+          align={headCell.numeric ? 'right' : 'left'}
+          padding={headCell.disablePadding ? 'none' : 'normal'}
+          sortDirection={orderBy === headCell.id ? order : false}
+        >
+          <TableSortLabel
+            active={orderBy === headCell.id}
+            direction={orderBy === headCell.id ? order : 'asc'}
+            onClick={createSortHandler(headCell.id)}
           >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
+            {headCell.label}
+            {orderBy === headCell.id ? (
+              <Box component="span" sx={visuallyHidden}>
+                {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+              </Box>
+            ) : null}
+          </TableSortLabel>
+        </TableCell>
+      ))}
+    </TableRow>
+  </TableHead>
+  
   );
 }
 interface EnhancedTableToolbarProps {
@@ -258,12 +249,7 @@ export const ExpenseList = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked);
-  };
-
-  // Avoid a layout jump when reaching the last page with empty rows.
+ 
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - expenses.length) : 0;
 
@@ -276,7 +262,7 @@ export const ExpenseList = () => {
   );
 
   return (
-    <Box sx={{ width: '100%' }}>
+    expenses.length>0?<Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
         <EnhancedTableToolbar numSelected={selected.length} />
         <TableContainer>
@@ -293,56 +279,45 @@ export const ExpenseList = () => {
               onRequestSort={handleRequestSort}
               rowCount={expenses.length}
             />
-            <TableBody>
-              {visibleRows.map((row, index) => {
-                const isItemSelected = selected.includes(row.id);
-                const labelId = `enhanced-table-checkbox-${index}`;
+           <TableBody>
+  {visibleRows.map((row, index) => {
+    const isItemSelected = selected.includes(row.id);
+    const labelId = `enhanced-table-checkbox-${index}`;
 
-                return (
-                  <TableRow
-                    hover
-                    onClick={(event) => handleClick(event, row.id)}
-                    role="checkbox"
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={row.id}
-                    selected={isItemSelected}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        color="primary"
-                        checked={isItemSelected}
-                        inputProps={{
-                          'aria-labelledby': labelId,
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell
-                      component="th"
-                      id={labelId}
-                      scope="row"
-                      padding="none"
-                    >
-                      {row.title}
-                    </TableCell>
-                   
-                    <TableCell align="right">{row.amount}</TableCell>
-                    <TableCell align="right">{row.date}</TableCell>
-                    
-                  </TableRow>
-                );
-              })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: (dense ? 33 : 53) * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
+    return (
+      <TableRow
+        hover
+        onClick={(event) => handleClick(event, row.id)}
+        role="checkbox"
+        aria-checked={isItemSelected}
+        tabIndex={-1}
+        key={row.id}
+        selected={isItemSelected}
+        sx={{ cursor: 'pointer' }}
+      >
+        <TableCell padding="checkbox">
+          <Checkbox
+            color="primary"
+            checked={isItemSelected}
+            inputProps={{
+              'aria-labelledby': labelId,
+            }}
+          />
+        </TableCell>
+        <TableCell align="left">{row.title}</TableCell>
+        <TableCell align="left">{row.category}</TableCell>
+        <TableCell align="right">{row.amount}</TableCell>
+        <TableCell align="right">{row.date}</TableCell>
+      </TableRow>
+    );
+  })}
+  {emptyRows > 0 && (
+    <TableRow style={{ height: 53 * emptyRows }}>
+      <TableCell colSpan={6} />
+    </TableRow>
+  )}
+</TableBody>
+
           </Table>
         </TableContainer>
         <TablePagination
@@ -356,6 +331,6 @@ export const ExpenseList = () => {
         />
       </Paper>
       
-    </Box>
+    </Box>:<></>
   );
 }
