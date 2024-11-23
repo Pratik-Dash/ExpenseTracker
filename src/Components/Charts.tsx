@@ -154,7 +154,7 @@ const Charts = () => {
 
   return (
     
-    <div className="chart-container">
+    expenses.length>0?<div className="chart-container">
       <h2 style={{ textAlign: "center" }}>Pie Chart</h2>
       <Pie
         data={chartData}
@@ -168,7 +168,7 @@ const Charts = () => {
         }}
       />
       <Line data={lineData}/>
-    </div>
+    </div>:<></>
   )
 }
 

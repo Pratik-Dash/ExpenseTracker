@@ -21,10 +21,6 @@ import ExpenseType from '../Types/ExpenseItem';
 import { ExpenseContext } from '../Context/AppContext';
 
 
-// const rows = [
-  
-//   createData(13, 'Purchased an ROG ally X', 37000,"11/02/2024"),
-// ];
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -143,10 +139,13 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   );
 }
 interface EnhancedTableToolbarProps {
-  numSelected: number;
+  numSelected: number,
+  onDelete: () => void
 }
+
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { numSelected } = props;
+  const { numSelected,onDelete:deleteHandler } = props;
+  
   return (
     <Toolbar
       sx={[
@@ -182,7 +181,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       {numSelected > 0 ? (
         <Tooltip title="Delete">
           <IconButton>
-            <DeleteIcon />
+            
+            <DeleteIcon onClick = {deleteHandler}/>
           </IconButton>
         </Tooltip>
       ) : (
@@ -194,7 +194,6 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 export const ExpenseList = () => {
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof ExpenseType>('amount');
-  const [selected, setSelected] = React.useState<readonly number[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -203,7 +202,9 @@ export const ExpenseList = () => {
   if(!context){
     throw new Error("Context Empty");
   }
-  const {expenses} = context
+  
+  const {expenses,setExpenses,selected,setSelected} = context
+  console.log(selected)
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
     property: keyof ExpenseType,
@@ -260,11 +261,15 @@ export const ExpenseList = () => {
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
     [order, orderBy, page, rowsPerPage,expenses],
   );
+  const deleteHandler = () => {
+    const updatedExpenses = expenses.filter(expense => !selected.includes(expense.id))
+    setExpenses(updatedExpenses)
+  }
 
   return (
     expenses.length>0?<Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar numSelected={selected.length} onDelete = {deleteHandler}/>
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
