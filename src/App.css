@@ -17,6 +17,7 @@
   justify-content: space-evenly;
   margin: 0 auto;
   height: 100vh;
+  
 
 
 }
@@ -24,12 +25,7 @@
 .leftPane{
   display: flex;
   flex-direction: column;
-  /* border: 1px solid black; */
   box-sizing: border-box;
-}
-
-.rightPane{
-  /* border: 1px solid black; */
 }
 
 .expense-form{
@@ -64,4 +60,10 @@
 .modal-container{
   display: flex;
   justify-content: center;
+}
+
+.chart-container{
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
